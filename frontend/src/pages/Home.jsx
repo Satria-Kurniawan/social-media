@@ -1,46 +1,56 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 
-import { FaChevronDown, FaLayerGroup } from "react-icons/fa"
+import { FaChevronDown, FaHeart, FaLayerGroup } from "react-icons/fa"
 import { MdBookmarks } from "react-icons/md"
-import { IoMdChatbubbles, IoMdThumbsUp } from "react-icons/io"
+import { IoMdChatbubbles } from "react-icons/io"
 import { IoPeopleCircleSharp, IoPersonCircleSharp } from "react-icons/io5"
-import { BsFillCollectionPlayFill, BsPlusCircleFill } from "react-icons/bs"
+import { BsFillCollectionPlayFill } from "react-icons/bs"
 
 import Topbar from "../components/Topbar"
 import Sidebar from "../components/Sidebar/Sidebar"
 import SidebarItem from "../components/Sidebar/SidebarItem"
-import Feed from "../components/Feed"
+import Feeds from "../components/Feeds/Feeds"
 
 function Home() {
-  const [showMore, setShowMore] = useState(false)
+  const [showMore, setShowMore] = useState(true)
 
   const firstMenusLeft = [
     { name: "Satria", foto: "/persons/fb_profile.jpg" },
-    { name: "Buat", icon: <BsPlusCircleFill size={25} /> },
+    // { name: "Buat", icon: <BsPlusCircleFill size={25} /> },
     { name: "Feeds", icon: <FaLayerGroup size={25} /> },
     { name: "Chats", icon: <IoMdChatbubbles size={25} /> },
     { name: "Vidio", icon: <BsFillCollectionPlayFill size={25} /> },
-    { name: "Teman", icon: <IoPersonCircleSharp size={30} /> },
-    { name: "Grup", icon: <IoPeopleCircleSharp size={30} /> },
-    { name: "Disukai", icon: <IoMdThumbsUp size={25} /> },
+    { name: "Teman", icon: <IoPersonCircleSharp size={25} /> },
+    { name: "Grup", icon: <IoPeopleCircleSharp size={25} /> },
+    { name: "Disukai", icon: <FaHeart size={25} /> },
     { name: "Tersimpan", icon: <MdBookmarks size={25} /> },
-  ]
-
-  const secondMenusLeft = [
-    { name: "Neymar", foto: "/persons/fb_profile.jpg" },
-    { name: "Lewandowski", foto: "/persons/fb_profile.jpg" },
-    { name: "Ronaldo", foto: "/persons/fb_profile.jpg" },
-    { name: "Messi", foto: "/persons/fb_profile.jpg" },
-    { name: "Mbapee", foto: "/persons/fb_profile.jpg" },
   ]
 
   const moreMenus = !showMore ? firstMenusLeft?.slice(0, 6) : firstMenusLeft
 
   const firstMenusRight = [
-    { name: "Neymar", foto: "/persons/fb_profile.jpg" },
-    { name: "Lewandowski", foto: "/persons/fb_profile.jpg" },
-    { name: "Messi", foto: "/persons/fb_profile.jpg" },
+    { name: "Neymar", foto: "/persons/blank_avatar.png" },
+    { name: "Lewandowski", foto: "/persons/blank_avatar.png" },
+    { name: "Messi", foto: "/persons/blank_avatar.png" },
   ]
+
+  const [discoverPeople, setDiscoverPeople] = useState([])
+  const [folowings, setFollowings] = useState([])
+
+  useEffect(() => {
+    axios
+      .get("/api/accounts/discover")
+      .then((response) => setDiscoverPeople(response.data.discover))
+      .catch((error) => console.log(error))
+  }, [])
+
+  useEffect(() => {
+    axios
+      .get("/api/accounts/followings")
+      .then((response) => setFollowings(response.data.followings))
+      .catch((error) => console.log(error))
+  }, [])
 
   return (
     <>
@@ -48,7 +58,7 @@ function Home() {
       <div className="w-full flex justify-between">
         <Sidebar background={"#FDFDFD"} additional={"border-x"}>
           {moreMenus.map((menu, i) => (
-            <SidebarItem key={i} menu={menu} />
+            <SidebarItem key={i} item={menu} />
           ))}
           {moreMenus && (
             <li
@@ -64,40 +74,39 @@ function Home() {
             </li>
           )}
           <hr className="border-t border-gray-200 mb-4" />
-          <h1 className="text-xl font-semibold mb-3">Teman Anda</h1>
-          {secondMenusLeft.map((menu, i) => (
-            <SidebarItem key={i} menu={menu} />
-          ))}
+          {folowings.length > 0 && (
+            <>
+              <h1 className="text-xl font-semibold mb-3">Mengikuti</h1>
+              {folowings?.map((following, i) => (
+                <SidebarItem
+                  key={i}
+                  item={following}
+                  isUser={true}
+                  isFollowing={true}
+                />
+              ))}
+            </>
+          )}
         </Sidebar>
-        <Feed />
+        <Feeds />
         <Sidebar>
-          <h1 className="text-xl font-semibold mb-3">Saran Teman</h1>
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-x-3">
-              <img
-                src={"/persons/fb_profile.jpg"}
-                className="rounded-full w-8 h-8"
-                alt="Menu"
-              />
-              <span>Gavi</span>
-            </div>
-            <span className="text-primary font-semibold text-sm">Ikuti</span>
-          </div>
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-x-3">
-              <img
-                src={"/persons/fb_profile.jpg"}
-                className="rounded-full w-8 h-8"
-                alt="Menu"
-              />
-              <span>Pedri</span>
-            </div>
-            <span className="text-primary font-semibold text-sm">Ikuti</span>
-          </div>
-          <hr className="border-t border-gray-200 mb-4" />
-          <h1 className="text-xl font-semibold mb-3">Teman Online</h1>
+          {discoverPeople.length > 0 && (
+            <>
+              <h1 className="text-xl font-semibold mb-3">Temukan Orang</h1>
+              {discoverPeople.map((poeple, i) => (
+                <SidebarItem
+                  key={i}
+                  item={poeple}
+                  isUser={true}
+                  isDiscover={true}
+                />
+              ))}
+              <hr className="border-t border-gray-200 mb-4" />
+            </>
+          )}
+          <h1 className="text-xl font-semibold mb-3">Sedang Online</h1>
           {firstMenusRight.map((menu, i) => (
-            <SidebarItem key={i} menu={menu} online={true} />
+            <SidebarItem key={i} item={menu} online={true} />
           ))}
         </Sidebar>
       </div>

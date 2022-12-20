@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom"
 import { useMultistepForm } from "../hooks/useMultistepForm"
 import { Link } from "react-router-dom"
 import { useDispatch } from "react-redux"
-import { createPost } from "../features/post/postsActions"
+import { createPost } from "../features/posts/postsActions"
 
 import {
   MdSearch,
@@ -90,6 +90,7 @@ function Topbar() {
     fd.append("picture", file)
 
     disptch(createPost(fd))
+    setOpenModal(false)
   }
 
   return (

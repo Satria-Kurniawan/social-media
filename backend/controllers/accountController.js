@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler")
 const Account = require("../models/accountModel")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
+const mongoose = require("mongoose")
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -95,4 +96,164 @@ const editProfile = asyncHandler(async (req, res) => {
   })
 })
 
-module.exports = { signUp, signIn, profile, editProfile }
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await Account.find()
+
+  res.status(200).json({ users })
+})
+
+const followOrUnfollow = asyncHandler(async (req, res) => {
+  const { id } = req.params
+
+  if (!mongoose.isValidObjectId(id))
+    return res.status(404).send(`No account with objectId ${id}`)
+
+  const sourceAccount = await Account.findById(req.account._id)
+  const destinationAccount = await Account.findById(id)
+
+  const alreadyFollow = destinationAccount.followers.some(
+    (f) => JSON.stringify(f.userId) === JSON.stringify(sourceAccount._id)
+  )
+
+  const sourceUserData = {
+    userId: sourceAccount._id,
+    userName: sourceAccount.name,
+    userPict: sourceAccount.profilePict,
+  }
+
+  const destinationUserData = {
+    userId: destinationAccount._id,
+    userName: destinationAccount.name,
+    userPict: destinationAccount.profilePict,
+  }
+
+  if (alreadyFollow) {
+    await destinationAccount.updateOne({
+      $pull: { followers: sourceUserData },
+    })
+
+    await sourceAccount.updateOne({
+      $pull: { followings: destinationUserData },
+    })
+
+    res.status(200).json({ message: "Unfollowed" })
+  } else {
+    await destinationAccount.updateOne({
+      $push: { followers: sourceUserData },
+    })
+
+    await sourceAccount.updateOne({
+      $push: { followings: destinationUserData },
+    })
+
+    res.status(200).json({ message: "Followed" })
+  }
+})
+
+const getFollowers = asyncHandler(async (req, res) => {
+  try {
+    const account = await Account.findById(req.account._id)
+
+    const followerList = await Promise.all(
+      account.followers.map(({ userId }) => {
+        return Account.findById(userId)
+      })
+    )
+
+    let followers = []
+
+    followerList.map((follower) => {
+      followers.push({
+        userId: follower._id,
+        userName: follower.name,
+        userPict: follower.profilePict,
+      })
+    })
+
+    res.status(200).json({ followers })
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
+
+const getFollowings = asyncHandler(async (req, res) => {
+  try {
+    const account = await Account.findById(req.account._id)
+
+    const followingList = await Promise.all(
+      account.followings.map(({ userId }) => {
+        return Account.findById(userId)
+      })
+    )
+
+    console.log(followingList)
+
+    let followings = []
+
+    followingList.map((following) => {
+      followings.push({
+        userId: following._id,
+        userName: following.name,
+        userPict: following.profilePict,
+      })
+    })
+
+    res.status(200).json({ followings })
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
+
+const discoverPeople = asyncHandler(async (req, res) => {
+  try {
+    const account = await Account.findById(req.account._id)
+    const users = await Account.find()
+
+    if (account.followings.length === users.length - 1)
+      res.status(500).send("Udah ke follow semua cuy.")
+
+    let discoverPeople
+
+    if (!account.followings.length) {
+      discoverPeople = users.filter(({ _id }) => {
+        return JSON.stringify(_id) !== JSON.stringify(account._id)
+      })
+    } else {
+      account.followings.map(({ userId }) => {
+        discoverPeople = users.filter(({ _id }) => {
+          return JSON.stringify(_id) !== JSON.stringify(userId)
+        })
+      })
+
+      discoverPeople = discoverPeople.filter(({ _id }) => {
+        return JSON.stringify(_id) !== JSON.stringify(account._id)
+      })
+    }
+
+    let discover = []
+
+    discoverPeople.map((user) => {
+      discover.push({
+        userId: user._id,
+        userName: user.name,
+        userPict: user.profilePict,
+      })
+    })
+
+    res.status(200).json({ discover })
+  } catch (error) {
+    res.status(500).json(error)
+  }
+})
+
+module.exports = {
+  signUp,
+  signIn,
+  profile,
+  editProfile,
+  getAllUsers,
+  followOrUnfollow,
+  getFollowers,
+  getFollowings,
+  discoverPeople,
+}

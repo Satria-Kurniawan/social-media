@@ -1,20 +1,73 @@
-function SidebarItem({ menu, online }) {
+import { useState } from "react"
+import axios from "axios"
+
+function SidebarItem({ item, isUser, isDiscover, isFollowing, online }) {
+  const [isFollowed, setIsFollowed] = useState(!isFollowing ? false : true)
+
+  const follow = async () => {
+    try {
+      setIsFollowed(!isFollowed)
+      await axios.patch(`/api/accounts/follow/${item.userId}`)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  if (isUser) {
+    return (
+      <ul>
+        <li className="flex justify-between mb-4 cursor-pointer">
+          <div className="flex items-center gap-x-3">
+            <div className="relative">
+              <img
+                src={
+                  item.userPict
+                    ? process.env.REACT_APP_API_BASE_URL +
+                      "/profilePictures/" +
+                      item.userPict
+                    : "/persons/blank_avatar.png"
+                }
+                className="rounded-full w-8 h-8"
+                alt="Profile"
+              />
+              {online && (
+                <div className="absolute bottom-0 right-0 rounded-full w-2 h-2 bg-green-500"></div>
+              )}
+            </div>
+            <span className="font-semibold">{item.userName}</span>
+          </div>
+          {(isDiscover || isFollowing) && (
+            <span
+              onClick={follow}
+              className="text-primary text-sm font-semibold"
+            >
+              {isFollowed ? (
+                <span className="text-red-500">Unfollow</span>
+              ) : (
+                <span className="text-primary">Follow</span>
+              )}
+            </span>
+          )}
+        </li>
+      </ul>
+    )
+  }
   return (
     <ul>
-      <li className="font-semibold text-gray-500">{menu.title}</li>
+      <li className="font-semibold text-gray-500">{item.title}</li>
       <li className="flex items-center gap-x-3 mb-4 cursor-pointer">
         <div className="relative">
-          {menu.foto ? (
-            <img src={menu.foto} className="rounded-full w-8 h-8" alt="Menu" />
+          {item.foto ? (
+            <img src={item.foto} className="rounded-full w-8 h-8" alt="item" />
           ) : (
-            <div className="text-primary w-8 h-8">{menu.icon}</div>
+            <div className="text-primary w-8 h-8">{item.icon}</div>
           )}
 
           {online && (
             <div className="absolute bottom-0 right-0 rounded-full w-2 h-2 bg-green-500"></div>
           )}
         </div>
-        <span className="font-semibold">{menu.name}</span>
+        <span className="font-semibold">{item.name}</span>
       </li>
     </ul>
   )

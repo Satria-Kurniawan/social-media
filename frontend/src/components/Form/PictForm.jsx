@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { MdClose, MdOutlinePhotoLibrary, MdUpload } from "react-icons/md"
+import { MdClose, MdOutlinePhotoLibrary } from "react-icons/md"
 
 function PictForm({ file, onChange, remove }) {
   const [fileDataURL, setFileDataURL] = useState(null)
@@ -25,7 +25,7 @@ function PictForm({ file, onChange, remove }) {
     <div className="h-80 flex justify-center items-center">
       {fileDataURL ? (
         <div className="relative">
-          <img src={fileDataURL} className="max-h-[16rem]" />
+          <img src={fileDataURL} alt="" className="max-h-[16rem]" />
           <div
             onClick={removeFile}
             className="absolute bottom-2 right-2 rounded-full p-2 bg-[#222] text-white opacity-90 cursor-pointer"

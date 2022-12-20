@@ -38,14 +38,14 @@ function ChatsPage() {
             />
           </div>
           {conversations.map((cs, i) => (
-            <SidebarItem key={i} menu={cs} />
+            <SidebarItem key={i} item={cs} />
           ))}
         </Sidebar>
         <Chat />
         <Sidebar background={"#FDFDFD"} additional={"border-x"}>
           <h1 className="text-xl font-semibold mb-3">Teman Online</h1>
           {onlineUsers.map((menu, i) => (
-            <SidebarItem key={i} menu={menu} online={true} />
+            <SidebarItem key={i} item={menu} online={true} />
           ))}
         </Sidebar>
       </div>

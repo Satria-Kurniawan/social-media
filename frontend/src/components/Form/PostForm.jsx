@@ -25,7 +25,7 @@ function PostForm({ file, caption, setCaption, location, setLocation }) {
   return (
     <div className="flex gap-x-3">
       <div>
-        <img src={fileDataURL} className="max-w-[20rem]" />
+        <img src={fileDataURL} alt="" className="max-w-[20rem]" />
       </div>
       <div className="w-full flex flex-col justify-between p-3">
         <div className="w-full">
@@ -45,7 +45,7 @@ function PostForm({ file, caption, setCaption, location, setLocation }) {
           </div>
           <textarea
             placeholder="Tulis keterangan..."
-            className="resize-none focus:outline-none"
+            className="bg-light resize-none focus:outline-none"
             cols="30"
             onChange={(e) =>
               setCaption((current) => (current = e.target.value))

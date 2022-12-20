@@ -6,6 +6,11 @@ const {
   signIn,
   profile,
   editProfile,
+  getAllUsers,
+  followOrUnfollow,
+  getFollowers,
+  getFollowings,
+  discoverPeople,
 } = require("../controllers/accountController")
 const { uploadProfilePict } = require("../middleware/fileUpload")
 
@@ -17,5 +22,10 @@ router.put(
   [withAuth, uploadProfilePict.single("profilePict")],
   editProfile
 )
+router.get("/all", withAuth, getAllUsers)
+router.patch("/follow/:id", withAuth, followOrUnfollow)
+router.get("/followers", withAuth, getFollowers)
+router.get("/followings", withAuth, getFollowings)
+router.get("/discover", withAuth, discoverPeople)
 
 module.exports = router

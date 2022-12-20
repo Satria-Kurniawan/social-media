@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { getPosts, createPost } from "./postsActions"
+import { getPosts, createPost, likeOrDislikePost } from "./postsActions"
 
 const initialState = {
   posts: [],
@@ -39,8 +39,23 @@ export const postSlice = createSlice({
     [createPost.rejected]: (state, action) => {
       state.loading = false
       state.error = true
-      console.log(action)
       state.message = action.payload
+    },
+    [likeOrDislikePost.fulfilled]: (state, action) => {
+      state.error = true
+      action.payload.data.message === "Post liked."
+        ? state.posts.map(
+            (post) =>
+              post._id === action.payload.postId &&
+              (post.likes = [...post.likes, action.payload.data.userData])
+          )
+        : state.posts.map(
+            (post) =>
+              post._id === action.payload.postId &&
+              (post.likes = post.likes.filter(
+                (pl) => pl.userId !== action.payload.data.userData.userId
+              ))
+          )
     },
   },
 })

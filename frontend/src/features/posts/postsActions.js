@@ -21,3 +21,19 @@ export const createPost = createAsyncThunk(
     }
   }
 )
+
+export const likeOrDislikePost = createAsyncThunk(
+  "posts/like",
+  async (postId, thunkAPI) => {
+    try {
+      const response = await postAPI.likeOrDislikePost(postId)
+
+      return {
+        data: response.data,
+        postId,
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data.message)
+    }
+  }
+)
