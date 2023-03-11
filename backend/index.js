@@ -21,10 +21,12 @@ app.use(
 
 app.use(express.static("public"))
 app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: true }))
 
 app.use("/api/accounts", require("./routes/accountRoutes"))
 app.use("/api/posts", require("./routes/postRoutes"))
+app.use("/api/conversations", require("./routes/conversationRoutes"))
+app.use("/api/messages", require("./routes/messageRoutes"))
 
 app.use(errorHandler)
 

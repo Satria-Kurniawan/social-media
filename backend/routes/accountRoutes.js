@@ -7,6 +7,7 @@ const {
   profile,
   editProfile,
   getAllUsers,
+  getUser,
   followOrUnfollow,
   getFollowers,
   getFollowings,
@@ -23,6 +24,7 @@ router.put(
   editProfile
 )
 router.get("/all", withAuth, getAllUsers)
+router.get("/user/:userId", withAuth, getUser)
 router.patch("/follow/:id", withAuth, followOrUnfollow)
 router.get("/followers", withAuth, getFollowers)
 router.get("/followings", withAuth, getFollowings)

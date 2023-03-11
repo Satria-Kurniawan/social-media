@@ -53,3 +53,7 @@ code {
 #feed:hover::-webkit-scrollbar {
   display: block;
 }
+
+#chat:hover::-webkit-scrollbar {
+  display: block;
+}

@@ -102,11 +102,26 @@ const getAllUsers = asyncHandler(async (req, res) => {
   res.status(200).json({ users })
 })
 
+const getUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  // if (!mongoose.isValidObjectId(userId))
+  //   return res.status(500).json(`No account with objectId ${userId}`)
+
+  try {
+    const user = await Account.findById(userId)
+
+    res.status(200).json(user)
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 const followOrUnfollow = asyncHandler(async (req, res) => {
   const { id } = req.params
 
-  if (!mongoose.isValidObjectId(id))
-    return res.status(404).send(`No account with objectId ${id}`)
+  // if (!mongoose.isValidObjectId(id))
+  //   return res.status(500).json(`No account with objectId ${id}`)
 
   const sourceAccount = await Account.findById(req.account._id)
   const destinationAccount = await Account.findById(id)
@@ -186,8 +201,6 @@ const getFollowings = asyncHandler(async (req, res) => {
       })
     )
 
-    console.log(followingList)
-
     let followings = []
 
     followingList.map((following) => {
@@ -198,52 +211,62 @@ const getFollowings = asyncHandler(async (req, res) => {
       })
     })
 
-    res.status(200).json({ followings })
+    return res.status(200).json({ followings })
   } catch (error) {
-    res.status(500).json(error)
+    return res.status(500).json(error)
   }
 })
 
 const discoverPeople = asyncHandler(async (req, res) => {
   try {
-    const account = await Account.findById(req.account._id)
-    const users = await Account.find()
-
-    if (account.followings.length === users.length - 1)
-      res.status(500).send("Udah ke follow semua cuy.")
-
-    let discoverPeople
-
-    if (!account.followings.length) {
-      discoverPeople = users.filter(({ _id }) => {
-        return JSON.stringify(_id) !== JSON.stringify(account._id)
-      })
-    } else {
-      account.followings.map(({ userId }) => {
-        discoverPeople = users.filter(({ _id }) => {
-          return JSON.stringify(_id) !== JSON.stringify(userId)
-        })
-      })
-
-      discoverPeople = discoverPeople.filter(({ _id }) => {
-        return JSON.stringify(_id) !== JSON.stringify(account._id)
-      })
-    }
-
-    let discover = []
-
-    discoverPeople.map((user) => {
-      discover.push({
-        userId: user._id,
-        userName: user.name,
-        userPict: user.profilePict,
-      })
+    const discover = await Account.find({
+      _id: { $ne: req.account._id },
+      "followers.userId": { $ne: req.account._id },
     })
 
     res.status(200).json({ discover })
   } catch (error) {
-    res.status(500).json(error)
+    console.log(error)
   }
+  // try {
+  //   const account = await Account.findById(req.account._id)
+  //   const users = await Account.find()
+
+  //   // if (account.followings.length === users.length - 1)
+  //   //   return res.status(500).json("Udah ke follow semua cuy.")
+
+  //   let discoverPeople
+
+  //   if (!account.followings.length) {
+  //     discoverPeople = users.filter(({ _id }) => {
+  //       return JSON.stringify(_id) !== JSON.stringify(account._id)
+  //     })
+  //   } else {
+  //     account.followings.map(({ userId }) => {
+  //       discoverPeople = users.filter(({ _id }) => {
+  //         return JSON.stringify(_id) !== JSON.stringify(userId)
+  //       })
+  //     })
+
+  //     discoverPeople = discoverPeople.filter(({ _id }) => {
+  //       return JSON.stringify(_id) !== JSON.stringify(account._id)
+  //     })
+  //   }
+
+  //   let discover = []
+
+  //   discoverPeople.map((user) => {
+  //     discover.push({
+  //       userId: user._id,
+  //       userName: user.name,
+  //       userPict: user.profilePict,
+  //     })
+  //   })
+
+  //   return res.status(200).json({ discover })
+  // } catch (error) {
+  //   return res.status(500).json(error)
+  // }
 })
 
 module.exports = {
@@ -252,6 +275,7 @@ module.exports = {
   profile,
   editProfile,
   getAllUsers,
+  getUser,
   followOrUnfollow,
   getFollowers,
   getFollowings,

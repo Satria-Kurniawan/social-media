@@ -1,14 +1,13 @@
-import { useContext } from "react"
+import { useState, useContext } from "react"
 import { AuthContext } from "../../../context/AuthContext"
 import { useDispatch } from "react-redux"
 import { likeOrDislikePost } from "../../../features/posts/postsActions"
-import { format } from "timeago.js"
+import ReactTimeAgo from "react-time-ago"
 
 import { FaRegHeart, FaRegComment, FaHeart } from "react-icons/fa"
 import { MdBookmarkBorder } from "react-icons/md"
 import { BsFillCheckCircleFill, BsThreeDots } from "react-icons/bs"
 import { IoPaperPlaneOutline } from "react-icons/io5"
-import { useState } from "react"
 
 function Feed({ post }) {
   const { account } = useContext(AuthContext)
@@ -141,7 +140,11 @@ function Feed({ post }) {
         </p>
         <p className="text-gray-400 mb-2">Lihat semua 1,249 komentar</p>
         <p className="text-xs text-gray-400">
-          {format(post.createdAt).toUpperCase()}
+          <ReactTimeAgo
+            date={Date.parse(post.createdAt)}
+            locale="en-US"
+            className="uppercase"
+          />
           <span className="text-black ml-3">Lihat terjemahan</span>
         </p>
       </div>

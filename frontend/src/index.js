@@ -4,17 +4,26 @@ import "./index.css"
 import App from "./App"
 import reportWebVitals from "./reportWebVitals"
 import { AuthContextProvider } from "./context/AuthContext"
-import axios from "axios"
+import { SocketProvider } from "./context/SocketContext"
 import { store } from "./app/store"
 import { Provider } from "react-redux"
+import TimeAgo from "javascript-time-ago"
+
+import en from "javascript-time-ago/locale/en.json"
+import ru from "javascript-time-ago/locale/ru.json"
+
+TimeAgo.addDefaultLocale(en)
+TimeAgo.addLocale(ru)
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <React.StrictMode>
     <AuthContextProvider>
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <SocketProvider url={"ws://localhost:8900"} options={{}}>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </SocketProvider>
     </AuthContextProvider>
   </React.StrictMode>
 )

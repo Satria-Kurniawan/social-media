@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
 import axios from "axios"
+import { AuthContext } from "../context/AuthContext"
+import { useSocket } from "../context/SocketContext"
 
 import { FaChevronDown, FaHeart, FaLayerGroup } from "react-icons/fa"
 import { MdBookmarks } from "react-icons/md"
@@ -13,6 +15,9 @@ import SidebarItem from "../components/Sidebar/SidebarItem"
 import Feeds from "../components/Feeds/Feeds"
 
 function Home() {
+  const { account } = useContext(AuthContext)
+  const socket = useSocket()
+
   const [showMore, setShowMore] = useState(true)
 
   const firstMenusLeft = [
@@ -29,14 +34,8 @@ function Home() {
 
   const moreMenus = !showMore ? firstMenusLeft?.slice(0, 6) : firstMenusLeft
 
-  const firstMenusRight = [
-    { name: "Neymar", foto: "/persons/blank_avatar.png" },
-    { name: "Lewandowski", foto: "/persons/blank_avatar.png" },
-    { name: "Messi", foto: "/persons/blank_avatar.png" },
-  ]
-
   const [discoverPeople, setDiscoverPeople] = useState([])
-  const [folowings, setFollowings] = useState([])
+  const [followings, setFollowings] = useState([])
 
   useEffect(() => {
     axios
@@ -45,12 +44,34 @@ function Home() {
       .catch((error) => console.log(error))
   }, [])
 
+  console.log(discoverPeople)
+
   useEffect(() => {
     axios
       .get("/api/accounts/followings")
       .then((response) => setFollowings(response.data.followings))
       .catch((error) => console.log(error))
   }, [])
+
+  const [onlineUsers, setOnlineUsers] = useState([])
+
+  useEffect(() => {
+    socket.emit("user-connected", account._id)
+    socket.on("get-online-users", (users) => {
+      setOnlineUsers(
+        followings.filter((fUser) =>
+          users.some(
+            (oUser) =>
+              oUser.userId === fUser.userId && oUser.userId !== account._id
+          )
+        )
+      )
+    })
+
+    return () => {
+      socket.off("get-online-users")
+    }
+  }, [socket, account, followings])
 
   return (
     <>
@@ -74,10 +95,10 @@ function Home() {
             </li>
           )}
           <hr className="border-t border-gray-200 mb-4" />
-          {folowings.length > 0 && (
+          {followings.length > 0 && (
             <>
               <h1 className="text-xl font-semibold mb-3">Mengikuti</h1>
-              {folowings?.map((following, i) => (
+              {followings?.map((following, i) => (
                 <SidebarItem
                   key={i}
                   item={following}
@@ -93,10 +114,10 @@ function Home() {
           {discoverPeople.length > 0 && (
             <>
               <h1 className="text-xl font-semibold mb-3">Temukan Orang</h1>
-              {discoverPeople.map((poeple, i) => (
+              {discoverPeople.map((people, i) => (
                 <SidebarItem
                   key={i}
-                  item={poeple}
+                  item={{ userId: people._id }}
                   isUser={true}
                   isDiscover={true}
                 />
@@ -104,10 +125,14 @@ function Home() {
               <hr className="border-t border-gray-200 mb-4" />
             </>
           )}
-          <h1 className="text-xl font-semibold mb-3">Sedang Online</h1>
-          {firstMenusRight.map((menu, i) => (
-            <SidebarItem key={i} item={menu} online={true} />
-          ))}
+          {onlineUsers.length > 0 && (
+            <>
+              <h1 className="text-xl font-semibold mb-3">Sedang Online</h1>
+              {onlineUsers.map((user, i) => (
+                <SidebarItem key={i} item={user} online={true} isUser={true} />
+              ))}
+            </>
+          )}
         </Sidebar>
       </div>
     </>

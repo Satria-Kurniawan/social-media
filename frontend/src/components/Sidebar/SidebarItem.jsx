@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 
 function SidebarItem({ item, isUser, isDiscover, isFollowing, online }) {
@@ -13,6 +13,17 @@ function SidebarItem({ item, isUser, isDiscover, isFollowing, online }) {
     }
   }
 
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    if (item.userId) {
+      axios
+        .get(`/api/accounts/user/${item.userId}`)
+        .then((response) => setUser(response.data))
+        .then((eror) => console.log(eror))
+    }
+  }, [item.userId])
+
   if (isUser) {
     return (
       <ul>
@@ -21,10 +32,10 @@ function SidebarItem({ item, isUser, isDiscover, isFollowing, online }) {
             <div className="relative">
               <img
                 src={
-                  item.userPict
+                  user && user.profilePict
                     ? process.env.REACT_APP_API_BASE_URL +
                       "/profilePictures/" +
-                      item.userPict
+                      user.profilePict
                     : "/persons/blank_avatar.png"
                 }
                 className="rounded-full w-8 h-8"
@@ -34,7 +45,7 @@ function SidebarItem({ item, isUser, isDiscover, isFollowing, online }) {
                 <div className="absolute bottom-0 right-0 rounded-full w-2 h-2 bg-green-500"></div>
               )}
             </div>
-            <span className="font-semibold">{item.userName}</span>
+            <span className="font-semibold">{user && user.name}</span>
           </div>
           {(isDiscover || isFollowing) && (
             <span
